@@ -16,13 +16,14 @@ import unicodedata
 class TextPreprocessor(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
+    
 
     def transform(self, X, y=None):
         if isinstance(X, csr_matrix):
             X = X.todense()
-        df = pd.DataFrame(X)
+            df = pd.DataFrame(X)
         return df
-
+    
           
 def clean_text(txt):
     nfkd = unicodedata.normalize('NFKD', txt)
@@ -40,18 +41,21 @@ def preprocess_data(texto):
     pipeline = Pipeline([
         ('preprocessor', TextPreprocessor()),
         ('vectorizer', CountVectorizer(ngram_range=(1, 1))),
+        ('to_dataframe', SparseToDataFrameTransformer()),
         ('scaler', StandardScaler(with_mean=False))
     ])
   
     # Transforma o texto usando o pipeline
     vectorized_text = pipeline['vectorizer'].fit_transform([texto])
     vectorized_text = pipeline['scaler'].fit_transform(vectorized_text)
+    vectorized_text = pipeline['to_dataframe'].fit_transform(vectorized_text)
+    
     return vectorized_text
 
 
 # Carrega o modelo
 try:
-    model = pickle.load(open('PIPELINE_texto_padronizado_AdaBoost.joblib', 'rb'))
+    model = pickle.load(open('/home/mel-iza/vaccine_fake_news/model/pipeline_texto_padronizadoRegressão_Logística.joblib', 'rb'))
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
 
@@ -59,9 +63,11 @@ except Exception as e:
 # Configuração do Streamlit
 header_image ='/home/mel-iza/vaccine_fake_news/src/wallpaper_2.png'
 st.image(header_image, use_column_width=True)
+
 #st.title("Modelo de Classificação de Texto")
 st.subheader("Detector de notícias falsas sobre vacinação")
-texto = st.text_input("Digite o texto:")
+
+texto = st.text_input("Digite um texto relacionado aos temas sobre | vacinas, vacinação, imunização, imunizantes")
 if st.button("Analisar"):
     # Limpeza do texto
     texto_limpo = clean_text(texto)
