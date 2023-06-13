@@ -13,6 +13,14 @@ import re
 import unicodedata
 
 
+
+class SparseToDataFrameTransformer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X, y=None):
+        return pd.DataFrame(X.todense())
+
 class TextPreprocessor(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -42,7 +50,7 @@ def preprocess_data(texto):
         ('preprocessor', TextPreprocessor()),
         ('vectorizer', CountVectorizer(ngram_range=(1, 1))),
         ('to_dataframe', SparseToDataFrameTransformer()),
-        ('scaler', StandardScaler(with_mean=False))
+        ('scaler', StandardScaler(with_mean=True))
     ])
   
     # Transforma o texto usando o pipeline
@@ -55,41 +63,42 @@ def preprocess_data(texto):
 
 # Carrega o modelo
 try:
-    model = pickle.load(open('/home/mel-iza/vaccine_fake_news/model/pipeline_texto_padronizadoRegressão_Logística.joblib', 'rb'))
+    model = pickle.load(open('/home/mel-iza/vaccine_fake_news/model/pickle_texto_padronizadoAdaBoost.pkl', 'rb'))
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
 
-
-# Configuração do Streamlit
-header_image ='/home/mel-iza/vaccine_fake_news/src/wallpaper_2.png'
-st.image(header_image, use_column_width=True)
-
-#st.title("Modelo de Classificação de Texto")
-st.subheader("Detector de notícias falsas sobre vacinação")
-
-texto = st.text_input("Digite um texto relacionado aos temas sobre | vacinas, vacinação, imunização, imunizantes")
-if st.button("Analisar"):
-    # Limpeza do texto
+def get_prediction(texto, model):
     texto_limpo = clean_text(texto)
-    
-    # Pré-processamento e predição
     predicao = model.predict_proba([texto_limpo])
     probabilidade = round(np.max(predicao[0]) * 100, 2)
+    return probabilidade
+
+def get_response(probabilidade):
+    if 0.5 <= probabilidade < 0.53:
+        st.error(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser falsa...')
+    elif 0.53 <= probabilidade < 0.56:
+        st.warning(f'Hum, não tenho muita certeza sobre essa informação. Tem {probabilidade}% de probabilidade de ser verdadeira...')
+    elif probabilidade >= 0.56:
+        st.success(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser verdadeira...')
+    else:
+        st.error(f'A probabilidade ({probabilidade}) está fora do intervalo esperado.')
+
+header_image = '/home/mel-iza/vaccine_fake_news/src/wallpaper_2.png'
+st.image(header_image, use_column_width=True)
+
+st.subheader("Detector de notícias falsas sobre vacinação")
+texto = st.text_input("Digite um texto relacionado aos temas sobre vacinas, vacinação, imunização, imunizantes")
+st.divider()
+
+if st.button("Enviar"):
+    if texto.strip() == "":
+        st.error("Por favor, digite um texto válido.")
+    else:
+        with st.spinner("Analisando..."):
+            probabilidade = get_prediction(texto, model)
+            get_response(probabilidade)
+            
+
     
-    # Exibição do resultado
-    st.write(f"Probabilidade: {probabilidade}%")
-
-#trigger = st.button('Enviar', on_click=probabilidade)
-#model = joblib.load('/home/mel-iza/vaccine_fake_news/PIPELINE_texto_padronizado_AdaBoost.joblib')
-
-
-#input_text = clean_text(input_text)
-#predicao = model.predict_proba([input_text])
-#probabilidade = round(np.max(predicao[0]) * 100, 2)
-
-#print(f"Probabilidade: {probabilidade}%")
-
-#preprocessed_text = process_data(input_text)
-#prediction = predict(preprocessed_text, model) 
 
 
