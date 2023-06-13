@@ -1,7 +1,7 @@
 <div align="center">
 
 <h2> Vaccine Fake News Detection | Streamlit APP <br></h2>
-Classification model trained on 20,000 zero-shot filtered data in Portuguese for the selected topic  
+Classification model trained on 21.322 zero-shot filtered data in Portuguese for the selected topic  
 
 <center>
 <br>
