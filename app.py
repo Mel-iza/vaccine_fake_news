@@ -11,8 +11,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin 
 import re 
 import unicodedata
+import sys
 
-
+sys.path.insert(1, '..')
 
 class SparseToDataFrameTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
@@ -63,7 +64,7 @@ def preprocess_data(texto):
 
 # Carrega o modelo
 try:
-    model = pickle.load(open('/home/mel-iza/vaccine_fake_news/model/pickle_texto_padronizadoAdaBoost.pkl', 'rb'))
+    model = pickle.load(open('model/pickle_texto_padronizadoAdaBoost.pkl', 'rb'))
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
 
@@ -83,7 +84,7 @@ def get_response(probabilidade):
     else:
         st.error(f'A probabilidade ({probabilidade}) está fora do intervalo esperado.')
 
-header_image = '/home/mel-iza/vaccine_fake_news/src/wallpaper_2.png'
+header_image = 'src/wallpaper_2.png'
 st.image(header_image, use_column_width=True)
 
 st.subheader("Detector de notícias falsas sobre vacinação")
