@@ -68,18 +68,20 @@ try:
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
 
+
 def get_prediction(texto, model):
     texto_limpo = clean_text(texto)
     predicao = model.predict_proba([texto_limpo])
     probabilidade = round(np.max(predicao[0]) * 100, 2)
     return probabilidade
 
+
 def get_response(probabilidade):
-    if 0.5 <= probabilidade < 0.53:
-        st.error(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser falsa...')
-    elif 0.53 <= probabilidade < 0.56:
-        st.warning(f'Hum, não tenho muita certeza sobre essa informação. Tem {probabilidade}% de probabilidade de ser verdadeira...')
-    elif probabilidade >= 0.56:
+    if probabilidade <= 53:
+        st.warning(f'Hum, não tenho muita certeza sobre essa informação. A probabilidade de a informação ser falsa está próxima de {probabilidade}%  .')
+    elif 56 <= probabilidade < 59:
+        st.info(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser verdadeira...')
+    elif probabilidade >= 60:
         st.success(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser verdadeira...')
     else:
         st.error(f'A probabilidade ({probabilidade}) está fora do intervalo esperado.')
@@ -88,7 +90,7 @@ header_image = 'src/wallpaper_2.png'
 st.image(header_image, use_column_width=True)
 
 st.subheader("Detector de notícias falsas sobre vacinação")
-texto = st.text_input("Digite um texto relacionado aos temas sobre vacinas, vacinação, imunização, imunizantes")
+texto = st.text_area("Digite um texto relacionado aos temas sobre vacinas, vacinação, imunização, imunizantes")
 st.divider()
 
 if st.button("Enviar"):
@@ -98,7 +100,11 @@ if st.button("Enviar"):
         with st.spinner("Analisando..."):
             probabilidade = get_prediction(texto, model)
             get_response(probabilidade)
-            
+        
+
+
+
+
 
     
 
