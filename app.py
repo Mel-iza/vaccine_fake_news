@@ -22,17 +22,6 @@ class SparseToDataFrameTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         return pd.DataFrame(X.todense())
 
-class TextPreprocessor(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None):
-        return self
-    
-
-    def transform(self, X, y=None):
-        if isinstance(X, csr_matrix):
-            X = X.todense()
-            df = pd.DataFrame(X)
-        return df
-    
           
 def clean_text(txt):
     nfkd = unicodedata.normalize('NFKD', txt)
@@ -64,7 +53,7 @@ def preprocess_data(texto):
 
 # Carrega o modelo
 try:
-    model = pickle.load(open('model/pickle_texto_padronizadoAdaBoost.pkl', 'rb'))
+    model = pickle.load(open('artifacts/model/pickle_texto_padronizadoAdaBoost.pkl', 'rb'))
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
 
@@ -77,14 +66,16 @@ def get_prediction(texto, model):
 
 
 def get_response(probabilidade):
-    if probabilidade <= 53:
+    if probabilidade <= 51.4:
         st.warning(f'Hum, não tenho muita certeza sobre essa informação. A probabilidade de a informação ser falsa está próxima de {probabilidade}%  .')
-    elif 56 <= probabilidade < 59:
+    elif 51.5 <= probabilidade < 59:
         st.info(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser verdadeira...')
     elif probabilidade >= 60:
         st.success(f'Essa informação sobre vacina tem {probabilidade}% de probabilidade de ser verdadeira...')
     else:
         st.error(f'A probabilidade ({probabilidade}) está fora do intervalo esperado.')
+
+
 
 header_image = 'src/wallpaper_2.png'
 st.image(header_image, use_column_width=True)
